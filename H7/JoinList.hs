@@ -48,7 +48,12 @@ dropJ _ Empty = Empty
 dropJ i l
         | i <= 0          = l
         | i >= getJSize l = Empty
-dropJ i (Append _ l l')   = (dropJ i l) +++ l'
+dropJ i (Append _ l l') 
+        | sl < i    = dropJ i l'
+        | sl == i   = l'
+        | otherwise = (dropJ i l) +++ l'
+        where sl  = getJSize l
+              sl' = getJSize l'
 
 takeJ :: (Sized b, Monoid b) =>
          Int -> JoinList b a -> JoinList b a
@@ -56,7 +61,12 @@ takeJ _ Empty = Empty
 takeJ i l
         | i <= 0          = Empty
         | i >= getJSize l = l
-takeJ i (Append _ l l')   = takeJ i l
+takeJ i (Append _ l l')
+        | sl < i    = l +++ (takeJ i l')
+        | sl == i   = l
+        | otherwise = takeJ i l
+        where sl  = getJSize l
+              sl' = getJSize l'
 
 --------------------------------------------------
 
