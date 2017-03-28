@@ -22,3 +22,6 @@ score c
 
 scoreString :: String -> Score
 scoreString = foldr (\x a -> mappend (score x) a) mempty
+
+getScore :: Score -> Int
+getScore (Score s) = s
