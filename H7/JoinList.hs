@@ -76,6 +76,7 @@ instance Buffer (JoinList (Score, Size) String) where
     toString (Single _ s)    = s
     toString (Append _ l l') = toString l ++ "\n" ++ toString l'
     fromString s = foldl (\b l -> b +++ (Single (scoreString l, 1) l)) Empty (lines s)
+    --fromString s = foldr (\l b -> (Single (scoreString l, 1) l) +++ b) Empty (lines s)
     line = indexJ
     replaceLine i s b = (takeJ i b) +++ (fromString s) +++ (dropJ (i+1) b)
     numLines = getJSize
