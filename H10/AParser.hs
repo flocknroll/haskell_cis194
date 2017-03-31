@@ -89,3 +89,17 @@ intParser = let readInt     = (:) <$> posInt <*> pure []
                 checkSpace  = pure [] <$> satisfy (== ' ')
                 concatP a b = (++) <$> a <*> b
             in readInt `concatP` checkSpace `concatP` readInt
+
+---------------------------------------------------------------------------
+
+instance Alternative Parser where
+  empty = Parser (\_ -> Nothing)
+  (<|>) (Parser a) (Parser b) = let p s = (a s) <|> (b s)
+                                in Parser p
+
+---------------------------------------------------------------------
+
+intOrUppercase :: Parser ()
+intOrUppercase = (pure () <$> posInt)
+                  <|>
+                 (pure () <$> satisfy isUpper)
