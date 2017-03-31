@@ -68,4 +68,24 @@ instance Functor Parser where
 
 instance Applicative Parser where
   pure a  = Parser (\x -> Just (a, x))
--- <*> (Parser f) (Parser p) = Parser ()
+  (<*>) (Parser f) (Parser p) = 
+                        let r s = case f s of
+                                   Nothing      -> Nothing
+                                   Just (g, s') -> case p s' of
+                                                    Nothing       -> Nothing
+                                                    Just (a, s'') -> Just (g a, s'')
+                        in Parser r
+
+----------------------------------------------------------------------------------------
+
+abParser :: Parser (Char, Char)
+abParser = (,) <$> satisfy (== 'a') <*> satisfy (== 'b')
+
+abParser_ :: Parser ()
+abParser_ = pure () <$> abParser
+
+intParser :: Parser [Integer]
+intParser = let readInt     = (:) <$> posInt <*> pure []
+                checkSpace  = pure [] <$> satisfy (== ' ')
+                concatP a b = (++) <$> a <*> b
+            in readInt `concatP` checkSpace `concatP` readInt
