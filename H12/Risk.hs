@@ -45,6 +45,12 @@ makeRolls n = do
                 r <- makeRolls (n - 1)
                 return $ (unDV d) : r
 
+makeRolls' :: Int -> Rand StdGen [Int]
+makeRolls' 0 = return []
+makeRolls' n = die >>= (\d ->
+               makeRolls (n-1) >>= (\r ->
+               return (unDV d : r)))
+
 calcDiff :: [Int] -> [Int] -> Battlefield
 calcDiff a d = let  sa = reverse (sort a)
                     sd = reverse (sort d)
@@ -59,3 +65,26 @@ battle bf = do
               rollsDef <- makeRolls def
               let res = calcDiff rollsAtk rollsDef
               return $ bf `mappend` res
+
+----------------------------------------------------------
+
+invade :: Battlefield -> Rand StdGen Battlefield
+invade bf@(Battlefield atk def)
+                        | atk < 2 || def == 0 = return bf
+                        | otherwise           = (battle bf) >>= invade
+
+------------------------------------------------------------------------
+repeat1000 :: Battlefield -> Rand StdGen [Battlefield]
+repeat1000 bf = sequence $ map invade (replicate 1000 bf)
+
+atkWin :: Battlefield -> Double
+atkWin (Battlefield _ def) = if def == 0 then 1.0 else 0.0
+
+successProb :: Battlefield -> Rand StdGen Double
+successProb bf = do
+                  attacks <- repeat1000 bf
+                  let wins = sum (map atkWin attacks)
+                  return $ wins / 1000.0
+
+testBattlefield :: Int -> Int -> IO Double
+testBattlefield a d = evalRandIO $ successProb (Battlefield a d)
